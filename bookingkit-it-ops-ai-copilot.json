@@ -1,0 +1,927 @@
+{
+  "name": "bookingkit IT Ops & AI Agent Copilot (v1.0.0)",
+  "nodes": [
+    {
+      "id": "n01",
+      "name": "1. Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n02w",
+      "name": "1b. Dashboard Webhook (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        480
+      ],
+      "webhookId": "9a2e7c14-3d5b-4f81-8c62-1b7d4e9a0f33",
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "itops-copilot-demo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Open the Test URL in a browser after clicking 'Listen for test event' to see the rendered HTML dashboard."
+    },
+    {
+      "id": "n02",
+      "name": "2. Load CONFIG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// bookingkit IT Ops & AI Agent Copilot - single source of truth.\nconst CONFIG = {\n  \"workflow_version\": \"1.0.0\",\n  \"company\": \"bookingkit GmbH (demo)\",\n  \"mode\": \"DEMO\",\n  \"ai_enabled\": false,\n  \"push_enabled\": false,\n  \"timezone\": \"Europe/Berlin\",\n  \"data_use_policy\": {\n    \"principles\": [\n      \"All requesters, tickets and inventory levels shown are synthetic demo data.\",\n      \"Ticket text is stripped of emails and phone numbers before it is sent to any LLM.\",\n      \"The AI agent can classify, draft and recommend. It never claims to have granted access, reset a credential or closed a ticket.\",\n      \"No message, provisioning call or ticket is sent externally without push_enabled being turned on, and every draft is marked as requiring human approval.\",\n      \"Sensitive systems (AWS, Stripe Admin) always require manager approval regardless of seat availability.\"\n    ],\n    \"labels\": [\n      \"SYNTHETIC DEMO DATA\",\n      \"SIMULATED INVENTORY\",\n      \"AI RECOMMENDATION\",\n      \"FACT\"\n    ]\n  },\n  \"roles\": {\n    \"Software Engineer\": {\n      \"function\": \"Engineering\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"GitHub\",\n        \"AWS\",\n        \"Jira\",\n        \"Confluence\",\n        \"1Password\"\n      ],\n      \"hardware\": \"MacBook Pro 14\\\" + external monitor\"\n    },\n    \"Customer Success Manager\": {\n      \"function\": \"Customer Success\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"Zendesk\",\n        \"Salesforce\",\n        \"HubSpot\",\n        \"1Password\"\n      ],\n      \"hardware\": \"MacBook Air 13\\\"\"\n    },\n    \"Sales Executive\": {\n      \"function\": \"Sales\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"Salesforce\",\n        \"HubSpot\",\n        \"1Password\"\n      ],\n      \"hardware\": \"MacBook Air 13\\\"\"\n    },\n    \"Marketing Specialist\": {\n      \"function\": \"Marketing\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"HubSpot\",\n        \"Figma\",\n        \"Notion\",\n        \"1Password\"\n      ],\n      \"hardware\": \"MacBook Air 13\\\"\"\n    },\n    \"Finance Analyst\": {\n      \"function\": \"Finance\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"Notion\",\n        \"1Password\",\n        \"Stripe Admin\"\n      ],\n      \"hardware\": \"MacBook Air 13\\\"\"\n    },\n    \"Growth Support Generalist\": {\n      \"function\": \"Growth Support (IT/Ops)\",\n      \"tools\": [\n        \"Google Workspace\",\n        \"Slack\",\n        \"Jira\",\n        \"Confluence\",\n        \"Notion\",\n        \"1Password\"\n      ],\n      \"hardware\": \"MacBook Air 13\\\"\"\n    }\n  },\n  \"generic_role\": {\n    \"function\": \"Unclassified\",\n    \"tools\": [\n      \"Google Workspace\",\n      \"Slack\",\n      \"1Password\"\n    ],\n    \"hardware\": \"Standard laptop - confirm spec with manager\"\n  },\n  \"tool_inventory\": [\n    {\n      \"tool\": \"Google Workspace\",\n      \"total_seats\": 60,\n      \"used_seats\": 54,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Collaboration\"\n    },\n    {\n      \"tool\": \"Slack\",\n      \"total_seats\": 60,\n      \"used_seats\": 55,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Collaboration\"\n    },\n    {\n      \"tool\": \"GitHub\",\n      \"total_seats\": 20,\n      \"used_seats\": 18,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Engineering\"\n    },\n    {\n      \"tool\": \"AWS\",\n      \"total_seats\": 15,\n      \"used_seats\": 14,\n      \"sensitive\": true,\n      \"requires_manager_approval\": true,\n      \"category\": \"Engineering\"\n    },\n    {\n      \"tool\": \"Jira\",\n      \"total_seats\": 30,\n      \"used_seats\": 27,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Collaboration\"\n    },\n    {\n      \"tool\": \"Confluence\",\n      \"total_seats\": 30,\n      \"used_seats\": 25,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Collaboration\"\n    },\n    {\n      \"tool\": \"1Password\",\n      \"total_seats\": 60,\n      \"used_seats\": 50,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Security\"\n    },\n    {\n      \"tool\": \"Salesforce\",\n      \"total_seats\": 18,\n      \"used_seats\": 17,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Sales\"\n    },\n    {\n      \"tool\": \"HubSpot\",\n      \"total_seats\": 15,\n      \"used_seats\": 14,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Marketing\"\n    },\n    {\n      \"tool\": \"Zendesk\",\n      \"total_seats\": 10,\n      \"used_seats\": 9,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Customer Success\"\n    },\n    {\n      \"tool\": \"Figma\",\n      \"total_seats\": 12,\n      \"used_seats\": 10,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Design\"\n    },\n    {\n      \"tool\": \"Notion\",\n      \"total_seats\": 40,\n      \"used_seats\": 33,\n      \"sensitive\": false,\n      \"requires_manager_approval\": false,\n      \"category\": \"Collaboration\"\n    },\n    {\n      \"tool\": \"Stripe Admin\",\n      \"total_seats\": 4,\n      \"used_seats\": 4,\n      \"sensitive\": true,\n      \"requires_manager_approval\": true,\n      \"category\": \"Finance\"\n    }\n  ],\n  \"kb_articles\": [\n    {\n      \"title\": \"Reset your Google Workspace or Slack password\",\n      \"url\": \"https://kb.bookingkit.example/reset-password\",\n      \"category\": \"Access\",\n      \"keywords\": [\n        \"password\",\n        \"log in\",\n        \"login\",\n        \"locked out\",\n        \"can't log in\"\n      ]\n    },\n    {\n      \"title\": \"Connect to the company VPN\",\n      \"url\": \"https://kb.bookingkit.example/vpn-setup\",\n      \"category\": \"Access\",\n      \"keywords\": [\n        \"vpn\",\n        \"remote connect\",\n        \"can't connect remotely\"\n      ]\n    },\n    {\n      \"title\": \"Set up an office printer\",\n      \"url\": \"https://kb.bookingkit.example/printer-setup\",\n      \"category\": \"Hardware\",\n      \"keywords\": [\n        \"printer\",\n        \"paper jam\",\n        \"printing\"\n      ]\n    },\n    {\n      \"title\": \"Request a new software license\",\n      \"url\": \"https://kb.bookingkit.example/request-license\",\n      \"category\": \"Account Request\",\n      \"keywords\": [\n        \"license\",\n        \"seat\",\n        \"new account\",\n        \"need access to\"\n      ]\n    },\n    {\n      \"title\": \"Create or archive a Slack channel\",\n      \"url\": \"https://kb.bookingkit.example/slack-channels\",\n      \"category\": \"Software\",\n      \"keywords\": [\n        \"slack channel\",\n        \"archive channel\",\n        \"create channel\"\n      ]\n    },\n    {\n      \"title\": \"Troubleshoot a slow or overheating laptop\",\n      \"url\": \"https://kb.bookingkit.example/laptop-troubleshoot\",\n      \"category\": \"Hardware\",\n      \"keywords\": [\n        \"slow\",\n        \"overheat\",\n        \"fan\",\n        \"shuts down\",\n        \"freezing\"\n      ]\n    }\n  ],\n  \"ticket_categories\": {\n    \"Access\": {\n      \"default_urgency\": \"High\",\n      \"sla_hours\": 4,\n      \"keywords\": [\n        \"password\",\n        \"login\",\n        \"log in\",\n        \"locked out\",\n        \"vpn\",\n        \"access denied\",\n        \"can't connect\"\n      ]\n    },\n    \"Hardware\": {\n      \"default_urgency\": \"Medium\",\n      \"sla_hours\": 24,\n      \"keywords\": [\n        \"laptop\",\n        \"printer\",\n        \"monitor\",\n        \"keyboard\",\n        \"mouse\",\n        \"charger\",\n        \"fan\",\n        \"overheat\",\n        \"battery\"\n      ]\n    },\n    \"Software\": {\n      \"default_urgency\": \"Medium\",\n      \"sla_hours\": 24,\n      \"keywords\": [\n        \"slack channel\",\n        \"install\",\n        \"update\",\n        \"bug\",\n        \"crash\",\n        \"error message\"\n      ]\n    },\n    \"Account Request\": {\n      \"default_urgency\": \"Medium\",\n      \"sla_hours\": 8,\n      \"keywords\": [\n        \"need access to\",\n        \"requesting access\",\n        \"new seat\",\n        \"set me up\",\n        \"license\",\n        \"provision\"\n      ]\n    },\n    \"Other\": {\n      \"default_urgency\": \"Low\",\n      \"sla_hours\": 48,\n      \"keywords\": []\n    }\n  },\n  \"urgency_rank\": {\n    \"Low\": 0,\n    \"Medium\": 1,\n    \"High\": 2,\n    \"Critical\": 3\n  },\n  \"urgency_bump_keywords\": [\n    \"urgent\",\n    \"asap\",\n    \"can't work\",\n    \"can not work\",\n    \"blocked\"\n  ],\n  \"critical_keywords\": [\n    \"production\",\n    \"prod down\",\n    \"security breach\",\n    \"data leak\",\n    \"payment failure\"\n  ],\n  \"automation_opportunity_threshold\": 2,\n  \"automation_suggestions\": {\n    \"Access\": {\n      \"tool_suggestion\": \"n8n + Google Workspace Admin SDK\",\n      \"description\": \"Recurring password/VPN resets - candidate for a self-service Slack app that resets via Admin SDK after identity verification.\"\n    },\n    \"Hardware\": {\n      \"tool_suggestion\": \"n8n + asset-tag scanner form\",\n      \"description\": \"Recurring hardware issues - candidate for a triage form that auto-creates a loaner-laptop workflow and books a swap slot.\"\n    },\n    \"Software\": {\n      \"tool_suggestion\": \"n8n + Slack app\",\n      \"description\": \"Recurring software requests - candidate for a Slack shortcut that files a scoped request without a ticket.\"\n    },\n    \"Account Request\": {\n      \"tool_suggestion\": \"n8n + Google Workspace/SSO provisioning API\",\n      \"description\": \"Recurring access requests - candidate for automated seat provisioning with manager approval built into the flow.\"\n    },\n    \"Other\": {\n      \"tool_suggestion\": \"Review manually\",\n      \"description\": \"No clear pattern yet - keep tagging and revisit next cycle.\"\n    }\n  },\n  \"ai_enablement\": [\n    {\n      \"team\": \"Engineering\",\n      \"adoption_pct\": 72\n    },\n    {\n      \"team\": \"Customer Success\",\n      \"adoption_pct\": 38\n    },\n    {\n      \"team\": \"Sales\",\n      \"adoption_pct\": 44\n    },\n    {\n      \"team\": \"Marketing\",\n      \"adoption_pct\": 61\n    },\n    {\n      \"team\": \"Finance\",\n      \"adoption_pct\": 29\n    },\n    {\n      \"team\": \"Growth Support\",\n      \"adoption_pct\": 80\n    }\n  ],\n  \"ai_enablement_threshold_pct\": 45,\n  \"assumptions\": {\n    \"onboarding_minutes_saved_per_hire\": 25,\n    \"ticket_triage_minutes_saved_per_ticket\": 8,\n    \"label\": \"ASSUMPTION - replace with bookingkit's own measured figures. Not a claim of actual time saved.\"\n  },\n  \"banned_ai_phrases\": [\n    \"access granted\",\n    \"issue resolved\",\n    \"i've fixed\",\n    \"ive fixed\",\n    \"ticket closed\",\n    \"password reset\",\n    \"done!\",\n    \"all set now\"\n  ],\n  \"ai\": {\n    \"endpoint\": \"https://api.openai.com/v1/chat/completions\",\n    \"model\": \"gpt-4o-mini\",\n    \"temperature\": 0.1,\n    \"system_prompt\": \"You are an internal IT triage assistant for bookingkit, a SaaS company. You receive an ANONYMISED ticket description, a deterministic baseline classification, and a list of candidate knowledge-base articles. You do not have the power to grant access, reset anything, or close tickets - a human IT specialist does that. You must NEVER state or imply that access has been granted, a password has been reset, or a ticket has been resolved. Use only 'recommended_action' language such as 'may need' or 'recommend'. suggested_kb_article must be copied exactly from the candidate list provided, or null if none fits - never invent an article title or URL. category must be one of the allowed_categories and urgency one of the allowed_urgencies exactly as given. clarifying_question is optional; include one only if information needed to act is genuinely missing, and it must be a real question ending in '?'. recommended_action must be 60 words or fewer and contain no fabricated system names, ticket numbers, or timelines you were not given. Return ONLY one JSON object with exactly these keys: ticket_ref, category, urgency, recommended_action, suggested_kb_article, clarifying_question, confidence. confidence is a number from 0 to 1. No markdown, no commentary.\"\n  },\n  \"endpoints\": {\n    \"slack_webhook\": \"SLACK_WEBHOOK_URL_REQUIRED\",\n    \"google_workspace_admin_endpoint\": \"GOOGLE_WORKSPACE_ADMIN_ENDPOINT_REQUIRED\",\n    \"jira_webhook\": \"JIRA_WEBHOOK_URL_REQUIRED\",\n    \"confluence_note\": \"Self-serve KB articles above are placeholders - point kb_articles[].url at real Confluence pages once created.\",\n    \"mcp_integration_points\": [\n      \"HRIS new-hire/leaver lookup: MCP_HRIS_TOOL_REQUIRED\",\n      \"Asset/inventory system: MCP_ASSET_TOOL_REQUIRED\",\n      \"Calendar booking for AI clinics: MCP_CALENDAR_TOOL_REQUIRED\",\n      \"Identity/IAM provisioning: MCP_IAM_TOOL_REQUIRED\"\n    ]\n  },\n  \"live_requests\": []\n};\nreturn [{ json: { config: CONFIG } }];\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n03",
+      "name": "3. Load Demo Requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst DEMO = [\n  {\n    \"request_id\": \"REQ-2001\",\n    \"request_type\": \"ONBOARDING\",\n    \"submitted_hours_ago\": 96,\n    \"requester_name\": \"Jonas Weber\",\n    \"requester_email\": \"jonas.weber@example.com\",\n    \"role\": \"Software Engineer\",\n    \"team\": \"Engineering\",\n    \"manager_name\": \"Petra Lang\",\n    \"work_mode\": \"remote\",\n    \"start_date_days_from_now\": 5\n  },\n  {\n    \"request_id\": \"REQ-2002\",\n    \"request_type\": \"ONBOARDING\",\n    \"submitted_hours_ago\": 72,\n    \"requester_name\": \"Isabel Costa\",\n    \"requester_email\": \"isabel.costa@example.com\",\n    \"role\": \"Customer Success Manager\",\n    \"team\": \"Customer Success\",\n    \"manager_name\": \"Marco Bianchi\",\n    \"work_mode\": \"remote\",\n    \"start_date_days_from_now\": 2\n  },\n  {\n    \"request_id\": \"REQ-2003\",\n    \"request_type\": \"ONBOARDING\",\n    \"submitted_hours_ago\": 48,\n    \"requester_name\": \"Miriam Saeed\",\n    \"requester_email\": \"miriam.saeed@example.com\",\n    \"role\": \"Finance Analyst\",\n    \"team\": \"Finance\",\n    \"manager_name\": \"Helga Brandt\",\n    \"work_mode\": \"hybrid\",\n    \"start_date_days_from_now\": 7\n  },\n  {\n    \"request_id\": \"REQ-2004\",\n    \"request_type\": \"ONBOARDING\",\n    \"submitted_hours_ago\": 24,\n    \"requester_name\": \"Tobias Lindgren\",\n    \"requester_email\": \"tobias.lindgren@example.com\",\n    \"role\": \"Growth Support Generalist\",\n    \"team\": \"Growth Support\",\n    \"manager_name\": \"COO Office\",\n    \"work_mode\": \"hybrid\",\n    \"start_date_days_from_now\": 10\n  },\n  {\n    \"request_id\": \"REQ-2101\",\n    \"request_type\": \"OFFBOARDING\",\n    \"submitted_hours_ago\": 90,\n    \"requester_name\": \"Karin Voss\",\n    \"requester_email\": \"karin.voss@example.com\",\n    \"role\": \"Sales Executive\",\n    \"team\": \"Sales\",\n    \"manager_name\": \"Elif Demir\",\n    \"last_day_days_from_now\": 2,\n    \"tools_held\": [\n      \"Google Workspace\",\n      \"Slack\",\n      \"Salesforce\",\n      \"HubSpot\",\n      \"1Password\"\n    ]\n  },\n  {\n    \"request_id\": \"REQ-2102\",\n    \"request_type\": \"OFFBOARDING\",\n    \"submitted_hours_ago\": 60,\n    \"requester_name\": \"Felix Braun\",\n    \"requester_email\": \"felix.braun@example.com\",\n    \"role\": \"Software Engineer\",\n    \"team\": \"Engineering\",\n    \"manager_name\": \"Petra Lang\",\n    \"last_day_days_from_now\": 0,\n    \"tools_held\": [\n      \"Google Workspace\",\n      \"Slack\",\n      \"GitHub\",\n      \"AWS\",\n      \"Jira\",\n      \"Confluence\",\n      \"1Password\"\n    ]\n  },\n  {\n    \"request_id\": \"REQ-2103\",\n    \"request_type\": \"OFFBOARDING\",\n    \"submitted_hours_ago\": 30,\n    \"requester_name\": \"Anna Kowalski\",\n    \"requester_email\": \"anna.kowalski@example.com\",\n    \"role\": \"Marketing Specialist\",\n    \"team\": \"Marketing\",\n    \"manager_name\": \"Sofie Lund\",\n    \"last_day_days_from_now\": 5,\n    \"tools_held\": [\n      \"Google Workspace\",\n      \"Slack\",\n      \"HubSpot\",\n      \"Figma\",\n      \"Notion\",\n      \"1Password\"\n    ]\n  },\n  {\n    \"request_id\": \"REQ-3001\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 3,\n    \"requester_name\": \"Amara Boateng\",\n    \"requester_email\": \"amara.boateng@example.com\",\n    \"description\": \"Hi, I keep getting invalid password on Slack, can't log in this morning.\"\n  },\n  {\n    \"request_id\": \"REQ-3002\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 26,\n    \"requester_name\": \"Lukas Weber\",\n    \"requester_email\": \"lukas.weber@example.com\",\n    \"description\": \"Need VPN access set up on my new laptop, can't connect remotely from home.\"\n  },\n  {\n    \"request_id\": \"REQ-3003\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 5,\n    \"requester_name\": \"Priya Nair\",\n    \"requester_email\": \"priya.nair@example.com\",\n    \"description\": \"My MacBook fan is really loud and it's overheating, sometimes shuts down mid-call.\"\n  },\n  {\n    \"request_id\": \"REQ-3004\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 2,\n    \"requester_name\": \"Diego Alvarez\",\n    \"requester_email\": \"diego.alvarez@example.com\",\n    \"description\": \"Requesting access to AWS production console for the new deployment pipeline project, it's urgent for the release.\"\n  },\n  {\n    \"request_id\": \"REQ-3005\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 50,\n    \"requester_name\": \"Emily Turner\",\n    \"requester_email\": \"emily.turner@example.com\",\n    \"description\": \"Forgot my Google Workspace password again, this is the third time this month, locked out.\"\n  },\n  {\n    \"request_id\": \"REQ-3006\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 8,\n    \"requester_name\": \"Noah Fischer\",\n    \"requester_email\": \"noah.fischer@example.com\",\n    \"description\": \"Could someone set me up with a Figma seat? Need it for the new landing page project.\"\n  },\n  {\n    \"request_id\": \"REQ-3007\",\n    \"request_type\": \"IT_TICKET\",\n    \"submitted_hours_ago\": 70,\n    \"requester_name\": \"Sara Klein\",\n    \"requester_email\": \"sara.klein@example.com\",\n    \"description\": \"Printer on the 3rd floor isn't working, paper jam error won't clear no matter what I try.\"\n  }\n];\nconst now = new Date();\nfunction hoursAgoISO(h){ return new Date(now.getTime() - Number(h) * 3600000).toISOString(); }\n\nlet rows = [];\nif (CONFIG.mode === \"LIVE\") {\n  rows = (CONFIG.live_requests || []).map(function(r){ return Object.assign({}, r, { data_label: \"LIVE INPUT\" }); });\n} else {\n  rows = DEMO.map(function(r){\n    const o = Object.assign({}, r, { data_label: \"SYNTHETIC DEMO DATA - NOT REAL PEOPLE\" });\n    o.submitted_at = hoursAgoISO(r.submitted_hours_ago);\n    delete o.submitted_hours_ago;\n    return o;\n  });\n}\n\nif (!rows.length) {\n  return [{ json: { halt: true, status: \"REQUIRES_REVIEW\", review_reasons: [\"NO_INPUT_REQUESTS\"],\n    note: \"No requests supplied. In LIVE mode add records to CONFIG.live_requests (node 2).\",\n    run_mode: CONFIG.mode, workflow_version: CONFIG.workflow_version, request_type: \"NONE\" } }];\n}\n\nreturn rows.map(function(r){\n  return { json: Object.assign({ run_mode: CONFIG.mode, workflow_version: CONFIG.workflow_version,\n    received_at: now.toISOString(), status: \"OK\", review_reasons: [] }, r) };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n04",
+      "name": "4. Normalize + Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst EMAIL_RE = /^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$/;\nconst VALID_TYPES = [\"ONBOARDING\",\"OFFBOARDING\",\"IT_TICKET\"];\nconst now = new Date();\n\nfunction clean(s){ return String(s == null ? \"\" : s).replace(/\\s+/g, \" \").trim(); }\nfunction titleCase(s){ return clean(s).toLowerCase().replace(/(^|[\\s\\-'])([a-z])/g, function(m, a, b){ return a + b.toUpperCase(); }); }\nfunction addDaysISO(days){ return new Date(now.getTime() + Number(days) * 86400000).toISOString().slice(0, 10); }\n\nreturn $input.all().map(function(item){\n  const j = item.json;\n  if (j.halt) return { json: j };\n  const reasons = Array.isArray(j.review_reasons) ? j.review_reasons.slice() : [];\n\n  const type = clean(j.request_type).toUpperCase();\n  if (VALID_TYPES.indexOf(type) === -1) reasons.push(\"UNKNOWN_REQUEST_TYPE\");\n\n  const email = clean(j.requester_email).toLowerCase();\n  const email_valid = EMAIL_RE.test(email);\n  if (!email_valid) reasons.push(\"INVALID_REQUESTER_EMAIL\");\n\n  const rec = {\n    request_id: clean(j.request_id) || \"UNKNOWN\",\n    request_type: type,\n    requester_name: titleCase(j.requester_name) || \"UNKNOWN\",\n    requester_email: email,\n    requester_email_valid: email_valid,\n    submitted_at: j.submitted_at || j.received_at,\n    data_label: j.data_label, run_mode: j.run_mode, workflow_version: j.workflow_version, received_at: j.received_at,\n    status: \"OK\", review_reasons: reasons\n  };\n\n  if (type === \"ONBOARDING\") {\n    rec.role = clean(j.role); rec.team = clean(j.team) || \"UNKNOWN\"; rec.manager_name = titleCase(j.manager_name) || \"UNKNOWN\";\n    rec.work_mode = clean(j.work_mode).toLowerCase() || \"unknown\";\n    const days = Number(j.start_date_days_from_now);\n    rec.start_date_days_from_now = isNaN(days) ? null : days;\n    rec.start_date = isNaN(days) ? \"\" : addDaysISO(days);\n    if (!rec.role) reasons.push(\"MISSING_ROLE\");\n    if (isNaN(days)) reasons.push(\"MISSING_START_DATE\");\n  } else if (type === \"OFFBOARDING\") {\n    rec.role = clean(j.role); rec.team = clean(j.team) || \"UNKNOWN\"; rec.manager_name = titleCase(j.manager_name) || \"UNKNOWN\";\n    const days = Number(j.last_day_days_from_now);\n    rec.last_day_days_from_now = isNaN(days) ? null : days;\n    rec.last_day = isNaN(days) ? \"\" : addDaysISO(days);\n    rec.tools_held = Array.isArray(j.tools_held) ? j.tools_held : [];\n    if (!rec.role) reasons.push(\"MISSING_ROLE\");\n    if (isNaN(days)) reasons.push(\"MISSING_LAST_DAY\");\n    if (!rec.tools_held.length) reasons.push(\"NO_TOOLS_HELD_LISTED\");\n  } else if (type === \"IT_TICKET\") {\n    rec.description = clean(j.description);\n    if (!rec.description) reasons.push(\"MISSING_DESCRIPTION\");\n  }\n\n  rec.review_reasons = reasons;\n  rec.status = reasons.indexOf(\"UNKNOWN_REQUEST_TYPE\") !== -1 ? \"REQUIRES_REVIEW\" : (reasons.length ? \"REQUIRES_REVIEW\" : \"OK\");\n  return { json: rec };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n05",
+      "name": "5. Is Onboarding?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        420,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n05-c1",
+              "leftValue": "={{ $json.request_type }}",
+              "rightValue": "ONBOARDING",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n06",
+      "name": "6. Build Onboarding Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        140
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst inv = {};\nCONFIG.tool_inventory.forEach(function(t){ inv[t.tool] = { total: t.total_seats, used: t.used_seats, sensitive: t.sensitive, requires_manager_approval: t.requires_manager_approval }; });\n\nfunction words(t, n){ const w = String(t||\"\").trim().split(/\\s+/).filter(Boolean); return w.length<=n?w.join(\" \"):w.slice(0,n).join(\" \"); }\n\nreturn $input.all().map(function(item){\n  const j = JSON.parse(JSON.stringify(item.json));\n  if (j.halt) return { json: j };\n  const reasons = (j.review_reasons || []).slice();\n  const roleCfg = CONFIG.roles[j.role];\n  const usedGeneric = !roleCfg;\n  const rc = roleCfg || CONFIG.generic_role;\n  if (usedGeneric) reasons.push(\"ROLE_NOT_IN_TEMPLATE\");\n\n  const lines = rc.tools.map(function(tool){\n    const t = inv[tool];\n    if (!t) return { tool: tool, status: \"UNKNOWN_TOOL_NOT_IN_INVENTORY\" };\n    let status;\n    if (t.requires_manager_approval) status = \"PENDING_MANAGER_APPROVAL\";\n    else if (t.used < t.total) { t.used += 1; status = \"ASSIGNED\"; }\n    else status = \"WAITLISTED\";\n    return { tool: tool, status: status, sensitive: t.sensitive };\n  });\n\n  const waitlisted = lines.filter(function(l){ return l.status === \"WAITLISTED\"; });\n  const pending = lines.filter(function(l){ return l.status === \"PENDING_MANAGER_APPROVAL\"; });\n  let day1_status = \"READY\";\n  if (waitlisted.length) day1_status = \"AT RISK - LICENSE SHORTAGE\";\n  else if (pending.length) day1_status = \"AT RISK - AWAITING MANAGER APPROVAL\";\n\n  const urgent = (j.start_date_days_from_now !== null && j.start_date_days_from_now < 2 && day1_status !== \"READY\");\n  if (urgent) reasons.push(\"URGENT_START_DATE_AT_RISK\");\n\n  const checklist = [\n    { task: \"Order hardware: \" + rc.hardware, owner: \"IT & Growth Support\", due: j.start_date || \"TBD\" },\n    { task: \"Provision accounts: \" + rc.tools.join(\", \"), owner: \"IT & Growth Support\", due: j.start_date || \"TBD\" },\n    { task: \"Send welcome message and first-day agenda\", owner: j.manager_name || \"Manager\", due: j.start_date || \"TBD\" }\n  ];\n  if (pending.length) checklist.push({ task: \"Get manager approval for: \" + pending.map(function(p){ return p.tool; }).join(\", \"), owner: j.manager_name || \"Manager\", due: \"Before start date\" });\n  if (waitlisted.length) checklist.push({ task: \"Raise procurement request for additional seats: \" + waitlisted.map(function(p){ return p.tool; }).join(\", \"), owner: \"IT & Growth Support\", due: \"ASAP\" });\n\n  const draft = words(\"Hi \" + (j.requester_name.split(\" \")[0] || \"there\") + \", welcome to bookingkit! Your \" + rc.hardware + \" and core accounts (\" + rc.tools.slice(0,3).join(\", \") + (rc.tools.length>3?\" and more\":\"\") + \") are being set up ahead of your start date. See you on \" + (j.start_date || \"your start date\") + \"!\", 70);\n\n  j.function = rc.function;\n  j.onboarding_detail = { role: j.role || \"Unclassified\", lines: lines, day1_status: day1_status, checklist: checklist, urgent: urgent,\n    procurement_needed: waitlisted.map(function(l){ return l.tool; }), approvals_needed: pending.map(function(l){ return l.tool; }) };\n  j.sla_text = \"All core access ready 1 business day before start (\" + (j.start_date || \"TBD\") + \")\";\n  j.sla_at_risk = urgent;\n  j.integration = { slack_message: draft, google_workspace_payload: { primaryEmail: j.requester_email, name: j.requester_name, orgUnitPath: \"/\" + (j.team || \"General\"), tools: rc.tools }, jira_payload: null };\n  j.draft_message = draft; j.draft_requires_approval = true;\n  j.review_reasons = reasons; j.status = reasons.length ? \"REQUIRES_REVIEW\" : \"OK\";\n  return { json: j };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n07",
+      "name": "7. Is Offboarding?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n07-c1",
+              "leftValue": "={{ $json.request_type }}",
+              "rightValue": "OFFBOARDING",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n08",
+      "name": "8. Build Offboarding Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        380
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst inv = {};\nCONFIG.tool_inventory.forEach(function(t){ inv[t.tool] = t; });\nfunction words(t, n){ const w = String(t||\"\").trim().split(/\\s+/).filter(Boolean); return w.length<=n?w.join(\" \"):w.slice(0,n).join(\" \"); }\n\nreturn $input.all().map(function(item){\n  const j = JSON.parse(JSON.stringify(item.json));\n  if (j.halt) return { json: j };\n  const reasons = (j.review_reasons || []).slice();\n\n  const revoke_lines = (j.tools_held || []).map(function(tool){\n    const t = inv[tool];\n    return { tool: tool, sensitive: t ? t.sensitive : false, action: \"REVOKE\", known_inventory: Boolean(t) };\n  });\n  const sensitiveHeld = revoke_lines.filter(function(l){ return l.sensitive; });\n  const security_risk = sensitiveHeld.length > 0 && j.last_day_days_from_now !== null && j.last_day_days_from_now <= 1;\n\n  let status;\n  if (security_risk) status = \"IMMEDIATE ACTION REQUIRED\";\n  else if (j.last_day_days_from_now !== null && j.last_day_days_from_now < 2) status = \"DUE SOON\";\n  else status = \"SCHEDULED\";\n\n  const checklist = [\n    { task: \"Revoke access: \" + (j.tools_held || []).join(\", \"), owner: \"IT & Growth Support\", due: j.last_day || \"TBD\" },\n    { task: \"Reclaim hardware\", owner: \"IT & Growth Support\", due: j.last_day || \"TBD\" },\n    { task: \"Transfer document/repo ownership\", owner: j.manager_name || \"Manager\", due: j.last_day || \"TBD\" }\n  ];\n  if (sensitiveHeld.length) checklist.unshift({ task: \"PRIORITY: revoke sensitive access immediately: \" + sensitiveHeld.map(function(l){ return l.tool; }).join(\", \"), owner: \"IT & Growth Support\", due: \"Within 4 business hours of last day\" });\n\n  const draft = words(\"Hi \" + (j.manager_name || \"there\") + \", \" + j.requester_name + \"'s last day is \" + (j.last_day || \"TBD\") + \". Please confirm hardware return and any document ownership to reassign. IT will revoke system access on schedule\" + (sensitiveHeld.length ? (\", with \" + sensitiveHeld.map(function(l){ return l.tool; }).join(\", \") + \" prioritised for immediate revocation.\") : \".\"), 70);\n\n  j.offboarding_detail = { role: j.role || \"Unclassified\", revoke_lines: revoke_lines, security_risk: security_risk, status: status, checklist: checklist };\n  j.sla_text = sensitiveHeld.length ? \"Sensitive access revoked within 4 business hours of last day; standard access within 1 business day\" : \"Standard access revoked within 1 business day of last day\";\n  j.sla_at_risk = security_risk;\n  j.integration = { slack_message: draft, google_workspace_payload: null, jira_payload: null };\n  j.draft_message = draft; j.draft_requires_approval = true;\n  j.review_reasons = reasons; j.status = reasons.length ? \"REQUIRES_REVIEW\" : \"OK\";\n  return { json: j };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n09",
+      "name": "9. Is IT Ticket?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        860,
+        560
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n09-c1",
+              "leftValue": "={{ $json.request_type }}",
+              "rightValue": "IT_TICKET",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n10",
+      "name": "10. Classify Ticket (Baseline)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        540
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst CATS = CONFIG.ticket_categories;\nconst RANK = CONFIG.urgency_rank;\nconst EMAIL_RE = /[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}/gi;\nconst PHONE_RE = /\\+?\\d[\\d\\s\\-()]{8,}\\d/g;\n\nfunction pickCategory(text){\n  let best = \"Other\", bestHits = 0;\n  Object.keys(CATS).forEach(function(c){\n    if (c === \"Other\") return;\n    const hits = CATS[c].keywords.filter(function(k){ return text.indexOf(k) !== -1; }).length;\n    if (hits > bestHits) { bestHits = hits; best = c; }\n  });\n  return best;\n}\nfunction pickKB(text){\n  let best = null, bestHits = 0;\n  CONFIG.kb_articles.forEach(function(a){\n    const hits = a.keywords.filter(function(k){ return text.indexOf(k) !== -1; }).length;\n    if (hits > bestHits) { bestHits = hits; best = a; }\n  });\n  return best;\n}\n\nreturn $input.all().map(function(item){\n  const j = JSON.parse(JSON.stringify(item.json));\n  if (j.halt) return { json: j };\n  const text = String(j.description || \"\").toLowerCase();\n  const anonymised = text.replace(EMAIL_RE, \"[EMAIL]\").replace(PHONE_RE, \"[PHONE]\");\n\n  const category = pickCategory(text);\n  const catCfg = CATS[category];\n  let urgency = catCfg.default_urgency;\n  if (CONFIG.critical_keywords.some(function(k){ return text.indexOf(k) !== -1; })) urgency = \"Critical\";\n  else if (CONFIG.urgency_bump_keywords.some(function(k){ return text.indexOf(k) !== -1; }) && RANK[urgency] < RANK[\"High\"]) urgency = \"High\";\n\n  const kb = pickKB(text);\n  const sensitiveMentioned = CONFIG.tool_inventory.filter(function(t){ return t.requires_manager_approval && text.indexOf(t.tool.toLowerCase()) !== -1; });\n  const sensitive_access_requested = category === \"Account Request\" && sensitiveMentioned.length > 0;\n  const deflect_recommended = Boolean(kb) && category !== \"Account Request\" && !sensitive_access_requested;\n\n  let sla_hours = catCfg.sla_hours;\n  if (urgency === \"Critical\") sla_hours = Math.min(sla_hours, 2);\n\n  const baseline = { category: category, urgency: urgency, kb_match: kb ? kb.title : null, kb_url: kb ? kb.url : null,\n    deflect_recommended: deflect_recommended, sensitive_access_requested: sensitive_access_requested, sla_hours: sla_hours };\n\n  j.ticket_baseline = baseline;\n  j.ai_payload = {\n    ticket_ref: j.request_id, anonymised_description: anonymised,\n    kb_candidates: CONFIG.kb_articles.map(function(a){ return { title: a.title, category: a.category }; }),\n    allowed_categories: Object.keys(CATS), allowed_urgencies: Object.keys(RANK), baseline: baseline\n  };\n  return { json: j };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n11",
+      "name": "11. AI Ticket Triage Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1300,
+        540
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n11-c1",
+              "leftValue": "={{ String($('2. Load CONFIG').first().json.config.ai_enabled) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n12a",
+      "name": "12a. AI Ticket Triage (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('2. Load CONFIG').first().json.config.ai.endpoint }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('2. Load CONFIG').first().json.config.ai.model, temperature: $('2. Load CONFIG').first().json.config.ai.temperature, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: $('2. Load CONFIG').first().json.config.ai.system_prompt }, { role: 'user', content: JSON.stringify($json.ai_payload) } ] }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "notes": "OPENAI_CREDENTIAL_REQUIRED: create a Header Auth credential (Name=Authorization, Value=Bearer <your key>) and select it here. Only the anonymised ai_payload is sent - emails/phone numbers are stripped from ticket text first. Swap endpoint/model in node 2 for any OpenAI-compatible LLM.",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n12b",
+      "name": "12b. Skip AI (Baseline Only)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        640
+      ],
+      "parameters": {},
+      "notes": "LLM disabled: deterministic baseline classification is used."
+    },
+    {
+      "id": "n13",
+      "name": "13. Merge AI + Baseline",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1740,
+        540
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2,
+        "options": {}
+      }
+    },
+    {
+      "id": "n14",
+      "name": "14. Parse + Guardrail AI Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1960,
+        540
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst base = $('10. Classify Ticket (Baseline)').all();\nconst incoming = $input.all();\nconst RANK = CONFIG.urgency_rank;\nconst CATS = Object.keys(CONFIG.ticket_categories);\nconst URG = Object.keys(RANK);\nconst KB_TITLES = CONFIG.kb_articles.map(function(a){ return a.title; });\n\nfunction words(t, n){ const w = String(t||\"\").trim().split(/\\s+/).filter(Boolean); return w.length<=n?w.join(\" \"):w.slice(0,n).join(\" \"); }\nfunction scrub(t){\n  let s = String(t || \"\");\n  CONFIG.banned_ai_phrases.forEach(function(p){ s = s.replace(new RegExp(p.replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\"), \"gi\"), \"[action not yet taken]\"); });\n  s = s.replace(/(\\[action not yet taken\\][\\s,.!]*){2,}/gi, \"[action not yet taken]. \");\n  return s.replace(/\\s{2,}/g, \" \").replace(/\\s+([,.!])/g, \"$1\").trim();\n}\n\nconst out = [];\nfor (let i = 0; i < base.length; i++) {\n  const j = JSON.parse(JSON.stringify(base[i].json));\n  if (j.halt) { out.push({ json: j }); continue; }\n  const reasons = (j.review_reasons || []).slice();\n  const advisory = [];\n  const b = j.ticket_baseline;\n  let final = { category: b.category, urgency: b.urgency, recommended_action: \"\", suggested_kb_article: b.kb_match, clarifying_question: \"\", confidence: 0.55 };\n  let source = \"RULE_BASED_BASELINE\";\n  const resp = incoming[i] ? incoming[i].json : {};\n\n  if (resp && resp.error) {\n    reasons.push(\"AI_REQUEST_FAILED\");\n  } else if (resp && resp.choices && resp.choices[0] && resp.choices[0].message) {\n    try {\n      let raw = String(resp.choices[0].message.content || \"\").trim();\n      raw = raw.replace(/^```json/i, \"\").replace(/^```/, \"\").replace(/```$/, \"\").trim();\n      const p = JSON.parse(raw);\n      const required = [\"ticket_ref\",\"category\",\"urgency\",\"recommended_action\",\"suggested_kb_article\",\"clarifying_question\",\"confidence\"];\n      const missing = required.filter(function(k){ return p[k] === undefined; });\n      if (missing.length) {\n        reasons.push(\"AI_RESPONSE_MISSING_KEYS:\" + missing.join(\",\"));\n      } else {\n        if (CATS.indexOf(p.category) !== -1) final.category = p.category; else advisory.push(\"AI_CATEGORY_INVALID\");\n        if (URG.indexOf(p.urgency) !== -1) {\n          final.urgency = RANK[p.urgency] >= RANK[b.urgency] ? p.urgency : b.urgency;\n          if (RANK[p.urgency] < RANK[b.urgency]) advisory.push(\"AI_URGENCY_DOWNGRADE_BLOCKED\");\n        } else advisory.push(\"AI_URGENCY_INVALID\");\n        if (typeof p.recommended_action === \"string\" && p.recommended_action.length > 5) final.recommended_action = words(scrub(p.recommended_action), 60);\n        if (p.suggested_kb_article === null || KB_TITLES.indexOf(p.suggested_kb_article) !== -1) final.suggested_kb_article = p.suggested_kb_article;\n        else { final.suggested_kb_article = b.kb_match; advisory.push(\"AI_KB_SUGGESTION_NOT_IN_LIBRARY\"); }\n        if (typeof p.clarifying_question === \"string\" && p.clarifying_question.indexOf(\"?\") !== -1) final.clarifying_question = words(scrub(p.clarifying_question), 30);\n        if (typeof p.confidence === \"number\" && p.confidence >= 0 && p.confidence <= 1) final.confidence = Math.min(p.confidence, 0.75);\n        source = advisory.length ? \"LLM_FILTERED\" : \"LLM_VALIDATED\";\n      }\n    } catch (e) {\n      reasons.push(\"AI_RESPONSE_MALFORMED\");\n    }\n  }\n\n  if (!final.recommended_action) {\n    final.recommended_action = b.deflect_recommended ? \"Recommend pointing the requester to the matching self-serve article.\" : \"Recommend a specialist review this ticket and act within the SLA window.\";\n  }\n\n  j.ticket_final = final;\n  j.analysis_source = source;\n  j.advisory_flags = advisory;\n  j.review_reasons = reasons;\n  if (reasons.length) j.status = \"REQUIRES_REVIEW\";\n  delete j.ai_payload;\n  out.push({ json: j });\n}\nreturn out;\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n15",
+      "name": "15. Build Ticket Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        540
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nfunction words(t, n){ const w = String(t||\"\").trim().split(/\\s+/).filter(Boolean); return w.length<=n?w.join(\" \"):w.slice(0,n).join(\" \"); }\n\nreturn $input.all().map(function(item){\n  const j = JSON.parse(JSON.stringify(item.json));\n  if (j.halt) return { json: j };\n  const b = j.ticket_baseline, f = j.ticket_final;\n  const catCfg = CONFIG.ticket_categories[f.category] || CONFIG.ticket_categories[\"Other\"];\n  let sla_hours = catCfg.sla_hours;\n  if (f.urgency === \"Critical\") sla_hours = Math.min(sla_hours, 2);\n\n  const deflect = b.deflect_recommended && !b.sensitive_access_requested;\n  const owner = b.sensitive_access_requested ? \"IT & Growth Support + Manager approval\" : \"AI & IT Ops Specialist\";\n\n  const hoursWaiting = j.submitted_at ? (Date.now() - new Date(j.submitted_at).getTime()) / 3600000 : 0;\n  const sla_at_risk = hoursWaiting > sla_hours;\n\n  const kbArticle = f.suggested_kb_article ? CONFIG.kb_articles.filter(function(a){ return a.title === f.suggested_kb_article; })[0] : null;\n  let draft;\n  if (deflect && kbArticle) {\n    draft = words(\"Hi \" + j.requester_name.split(\" \")[0] + \", thanks for reaching out. This looks like something you can fix yourself: \" + kbArticle.title + \" - \" + kbArticle.url + \". Reply here if that does not solve it and I will pick it up directly.\", 60);\n  } else {\n    draft = words(\"Hi \" + j.requester_name.split(\" \")[0] + \", thanks for the report. \" + f.recommended_action + (b.sensitive_access_requested ? \" This needs manager sign-off first, which I have requested.\" : (\" Expect an update within \" + sla_hours + \" hours.\")), 60);\n  }\n\n  j.ticket_detail = { category: f.category, urgency: f.urgency, kb_match: f.suggested_kb_article, kb_url: kbArticle ? kbArticle.url : null,\n    deflected: deflect, sensitive_access_requested: b.sensitive_access_requested, recommended_action: f.recommended_action,\n    clarifying_question: f.clarifying_question, owner: owner, sla_hours: sla_hours };\n  j.sla_text = \"Target: \" + sla_hours + \" business hour(s)\";\n  j.sla_at_risk = sla_at_risk;\n  j.hours_since_submission = Math.round(hoursWaiting * 10) / 10;\n  j.integration = { slack_message: draft, google_workspace_payload: null,\n    jira_payload: deflect ? null : { summary: f.category + \": \" + j.requester_name, description: j.description, priority: f.urgency, dueInHours: sla_hours, requiresManagerApproval: b.sensitive_access_requested } };\n  j.draft_message = draft; j.draft_requires_approval = true;\n  return { json: j };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n16",
+      "name": "16. Flag Unmatched Request Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        700
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nreturn $input.all().map(function(item){\n  const j = JSON.parse(JSON.stringify(item.json));\n  if (j.halt) return { json: j };\n  j.review_reasons = (j.review_reasons || []).concat([\"UNKNOWN_REQUEST_TYPE\"]);\n  j.status = \"REQUIRES_REVIEW\";\n  j.sla_text = \"N/A\"; j.sla_at_risk = false;\n  j.integration = { slack_message: null, google_workspace_payload: null, jira_payload: null };\n  j.draft_message = \"\"; j.draft_requires_approval = false;\n  return { json: j };\n});\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n17",
+      "name": "17. Merge All Branches",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        300
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 4,
+        "options": {}
+      }
+    },
+    {
+      "id": "n18",
+      "name": "18. Push Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2620,
+        160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n18-c1",
+              "leftValue": "={{ String($('2. Load CONFIG').first().json.config.push_enabled) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n19",
+      "name": "19. Slack Notification (Draft Post)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('2. Load CONFIG').first().json.config.endpoints.slack_webhook }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.integration.slack_message ? JSON.stringify({ text: $json.integration.slack_message, requires_human_approval: true }) : JSON.stringify({ skip: true }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "notes": "SLACK_WEBHOOK_URL_REQUIRED: paste an Incoming Webhook URL into node 2. Every message is marked requires_human_approval - wire it to a review step before it reaches a real channel.",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n20",
+      "name": "20. Google Workspace Provisioning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('2. Load CONFIG').first().json.config.endpoints.google_workspace_admin_endpoint }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.integration.google_workspace_payload ? JSON.stringify($json.integration.google_workspace_payload) : JSON.stringify({ skip: true }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "notes": "GOOGLE_WORKSPACE_ADMIN_ENDPOINT_REQUIRED: point at your Admin SDK Directory API proxy and attach an OAuth2/Header Auth credential. Only onboarding items carry a payload; others send {skip:true} harmlessly.",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n21",
+      "name": "21. Jira Escalation Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('2. Load CONFIG').first().json.config.endpoints.jira_webhook }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.integration.jira_payload ? JSON.stringify($json.integration.jira_payload) : JSON.stringify({ skip: true }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "notes": "JIRA_WEBHOOK_URL_REQUIRED: point at a Jira Automation webhook (or swap to the Jira node). Only non-deflected tickets carry a payload.",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n22",
+      "name": "22. Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2620,
+        460
+      ],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "requests",
+        "options": {}
+      }
+    },
+    {
+      "id": "n23",
+      "name": "23. IT Ops Dashboard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2840,
+        460
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst CONFIG = $('2. Load CONFIG').first().json.config;\nconst rows = (($input.first().json.requests) || []).filter(function(r){ return !r.halt; });\n\nfunction esc(s){ return String(s == null ? \"\" : s).replace(/&/g, \"&amp;\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\").replace(/\"/g, \"&quot;\"); }\nfunction tally(list){ const o = {}; list.forEach(function(k){ o[k] = (o[k] || 0) + 1; }); return o; }\n\nconst onboarding = rows.filter(function(r){ return r.request_type === \"ONBOARDING\"; });\nconst offboarding = rows.filter(function(r){ return r.request_type === \"OFFBOARDING\"; });\nconst tickets = rows.filter(function(r){ return r.request_type === \"IT_TICKET\"; });\nconst unmatched = rows.filter(function(r){ return r.request_type !== \"ONBOARDING\" && r.request_type !== \"OFFBOARDING\" && r.request_type !== \"IT_TICKET\"; });\n\n// --- License inventory reconciliation ---\nconst inv = {};\nCONFIG.tool_inventory.forEach(function(t){ inv[t.tool] = { total: t.total_seats, previously_used: t.used_seats, released: 0, assigned: 0, sensitive: t.sensitive }; });\noffboarding.forEach(function(o){ (o.offboarding_detail ? o.offboarding_detail.revoke_lines : []).forEach(function(l){ if (inv[l.tool]) inv[l.tool].released += 1; }); });\nonboarding.forEach(function(o){ (o.onboarding_detail ? o.onboarding_detail.lines : []).filter(function(l){ return l.status === \"ASSIGNED\"; }).forEach(function(l){ if (inv[l.tool]) inv[l.tool].assigned += 1; }); });\nconst inventory_table = Object.keys(inv).map(function(tool){\n  const t = inv[tool];\n  const current = Math.max(0, Math.min(t.total, t.previously_used - t.released + t.assigned));\n  const remaining = t.total - current;\n  return { tool: tool, total: t.total, previously_used: t.previously_used, released_this_run: t.released, assigned_this_run: t.assigned,\n    currently_used: current, remaining: remaining, utilization_pct: Math.round((current / t.total) * 1000) / 10,\n    near_capacity: remaining <= 1, sensitive: t.sensitive };\n}).sort(function(a, b){ return b.utilization_pct - a.utilization_pct; });\n\n// --- Automation opportunity detection ---\nconst catCounts = tally(tickets.map(function(t){ return t.ticket_detail ? t.ticket_detail.category : \"Other\"; }));\nconst opportunities = Object.keys(catCounts).filter(function(c){ return catCounts[c] >= CONFIG.automation_opportunity_threshold; }).map(function(c){\n  const sug = CONFIG.automation_suggestions[c] || CONFIG.automation_suggestions[\"Other\"];\n  return { category: c, count: catCounts[c], suggested_tool: sug.tool_suggestion, description: sug.description };\n}).sort(function(a, b){ return b.count - a.count; });\n\n// --- AI enablement ---\nconst enablement = CONFIG.ai_enablement.map(function(e){ return Object.assign({}, e, { clinic_recommended: e.adoption_pct < CONFIG.ai_enablement_threshold_pct }); });\n\n// --- Ticket queue ---\nconst RANK = CONFIG.urgency_rank;\nconst ticketQueue = tickets.slice().sort(function(a, b){\n  const ur = (RANK[b.ticket_detail.urgency] || 0) - (RANK[a.ticket_detail.urgency] || 0);\n  if (ur !== 0) return ur;\n  return (b.sla_at_risk ? 1 : 0) - (a.sla_at_risk ? 1 : 0);\n});\nconst deflected = tickets.filter(function(t){ return t.ticket_detail && t.ticket_detail.deflected; });\n\n// --- Review queue ---\nconst reviewQueue = rows.filter(function(r){ return r.status === \"REQUIRES_REVIEW\"; });\nconst reasonTally = tally([].concat.apply([], rows.map(function(r){ return (r.review_reasons || []).map(function(x){ return x.split(\":\")[0]; }); })));\n\nconst mins = CONFIG.assumptions;\nconst estHours = Math.round((onboarding.length * mins.onboarding_minutes_saved_per_hire + tickets.length * mins.ticket_triage_minutes_saved_per_ticket) / 60 * 10) / 10;\n\nconst dashboard = {\n  report: \"bookingkit IT Ops & AI Agent Copilot - Ops Dashboard\", company: CONFIG.company, run_mode: CONFIG.mode, workflow_version: CONFIG.workflow_version,\n  generated_at: new Date().toISOString(), data_label: rows.length ? rows[0].data_label : \"NO DATA\",\n  requests_processed: rows.length, onboarding_count: onboarding.length, offboarding_count: offboarding.length, ticket_count: tickets.length, unmatched_count: unmatched.length,\n  onboarding_ready: onboarding.filter(function(o){ return o.onboarding_detail.day1_status === \"READY\"; }).length,\n  onboarding_at_risk: onboarding.filter(function(o){ return o.onboarding_detail.day1_status !== \"READY\"; }).length,\n  offboarding_immediate_action: offboarding.filter(function(o){ return o.offboarding_detail.security_risk; }).length,\n  tickets_deflected: deflected.length, tickets_deflection_rate_pct: tickets.length ? Math.round((deflected.length / tickets.length) * 1000) / 10 : 0,\n  tickets_sla_at_risk: tickets.filter(function(t){ return t.sla_at_risk; }).length,\n  requires_review: reviewQueue.length,\n  automation_opportunities: opportunities, ai_enablement: enablement, inventory_table: inventory_table,\n  estimated_hours_saved_this_run: estHours, estimate_note: mins.label + \" (\" + mins.onboarding_minutes_saved_per_hire + \" min/hire, \" + mins.ticket_triage_minutes_saved_per_ticket + \" min/ticket assumed).\",\n  data_quality_issues: reasonTally,\n  measurement_note: \"Measures throughput, deflection and risk. It does not measure IT budget savings and is not a claim of actual hours saved without validated baseline figures.\",\n  policy_note: CONFIG.data_use_policy.principles\n};\n\nfunction badge(cls, t){ return '<span class=\"b ' + cls + '\">' + esc(t) + \"</span>\"; }\nfunction kpi(v, l){ return '<div class=\"k\"><b>' + esc(v) + \"</b><span>\" + esc(l) + \"</span></div>\"; }\nconst css = \"body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f5f6f8;color:#1b1f24}.wrap{max-width:1220px;margin:0 auto;padding:24px}h1{font-size:22px;margin:0}.sub{color:#5a6472;font-size:13px}.banner{background:#e7f0ff;border:1px solid #b9d3fb;padding:8px 12px;border-radius:8px;font-size:12px;margin:12px 0}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}.k{background:#fff;border:1px solid #e3e6eb;border-radius:10px;padding:10px 12px}.k b{display:block;font-size:22px}.k span{font-size:11px;color:#5a6472;text-transform:uppercase;letter-spacing:.04em}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3e6eb;font-size:12.5px}th,td{word-break:break-word;padding:7px 9px;border-bottom:1px solid #eef0f3;text-align:left;vertical-align:top}th{background:#fafbfc;font-size:11px;text-transform:uppercase;color:#5a6472}.b{display:inline-block;padding:1px 8px;border-radius:10px;font-weight:600;font-size:11px;color:#fff}.bhigh{background:#b42318}.bmed{background:#b7791f}.blow{background:#1a7f4b}.bready{background:#1a7f4b}.brisk{background:#b42318}.warn{color:#b42318;font-weight:600}.ok{color:#1a7f4b;font-weight:600}h2{font-size:15px;margin:22px 0 8px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:800px){.grid2{grid-template-columns:1fr}}.tw{overflow-x:auto}.small{font-size:11.5px;color:#5a6472}\";\n\nconst h = [];\nh.push('<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>IT Ops Copilot</title><style>' + css + \"</style></head><body><div class=\\\"wrap\\\">\");\nh.push(\"<h1>bookingkit IT Ops &amp; AI Agent Copilot</h1>\");\nh.push('<div class=\"sub\">' + esc(CONFIG.company) + \" | mode \" + esc(CONFIG.mode) + \" | v\" + esc(CONFIG.workflow_version) + \" | \" + esc(dashboard.generated_at) + \"</div>\");\nh.push('<div class=\"banner\"><b>' + esc(dashboard.data_label) + \".</b> All requesters, tickets and license figures shown are synthetic. The AI agent classifies and drafts only; it never claims to have granted access or resolved a ticket, and nothing is sent without push_enabled and human approval.</div>\");\nh.push('<div class=\"kpis\">' + kpi(rows.length, \"Requests processed\") + kpi(dashboard.onboarding_ready + \"/\" + onboarding.length, \"New hires day-1 ready\") + kpi(dashboard.offboarding_immediate_action, \"Leavers needing urgent revoke\") + kpi(dashboard.tickets_deflection_rate_pct + \"%\", \"Tickets self-serve deflected\") + kpi(dashboard.tickets_sla_at_risk, \"Tickets at SLA risk\") + kpi(opportunities.length, \"Automation opportunities found\") + kpi(dashboard.requires_review, \"Requires review\") + kpi(estHours + \" h\", \"Est. time saved (this run)*\") + \"</div>\");\nh.push('<div class=\"small\">*' + esc(dashboard.estimate_note) + \"</div>\");\n\nh.push(\"<h2>Onboarding - new hire readiness</h2><div class=\\\"tw\\\"><table><tr><th>Hire</th><th>Role</th><th>Start</th><th>Status</th><th>Tools</th><th>Checklist owner(s)</th></tr>\");\nonboarding.forEach(function(o){\n  const d = o.onboarding_detail;\n  h.push(\"<tr><td><b>\" + esc(o.requester_name) + \"</b><br><span class=\\\"small\\\">\" + esc(o.team) + \"</span></td><td>\" + esc(d.role) + \"</td><td>\" + esc(o.start_date) + (o.sla_at_risk ? '<br><span class=\"warn\">URGENT</span>' : \"\") + \"</td><td>\" + (d.day1_status === \"READY\" ? badge(\"bready\", \"READY\") : badge(\"brisk\", d.day1_status)) + \"</td><td>\" + d.lines.map(function(l){ return esc(l.tool) + \" (\" + esc(l.status.replace(\"_\",\" \")) + \")\"; }).join(\"<br>\") + \"</td><td>\" + d.checklist.map(function(c){ return esc(c.owner); }).filter(function(v,i,a){return a.indexOf(v)===i;}).join(\", \") + \"</td></tr>\");\n});\nh.push(\"</table></div>\");\n\nh.push(\"<h2>Offboarding - access &amp; asset recovery</h2><div class=\\\"tw\\\"><table><tr><th>Leaver</th><th>Role</th><th>Last day</th><th>Status</th><th>Access to revoke</th></tr>\");\noffboarding.forEach(function(o){\n  const d = o.offboarding_detail;\n  h.push(\"<tr><td><b>\" + esc(o.requester_name) + \"</b><br><span class=\\\"small\\\">\" + esc(o.team) + \"</span></td><td>\" + esc(d.role) + \"</td><td>\" + esc(o.last_day) + \"</td><td>\" + (d.security_risk ? badge(\"brisk\", d.status) : badge(\"bready\", d.status)) + \"</td><td>\" + d.revoke_lines.map(function(l){ return esc(l.tool) + (l.sensitive ? \" (sensitive)\" : \"\"); }).join(\", \") + \"</td></tr>\");\n});\nh.push(\"</table></div>\");\n\nh.push(\"<h2>IT ticket queue (highest priority first)</h2><div class=\\\"tw\\\"><table><tr><th>Requester</th><th>Category</th><th>Urgency</th><th>Deflected</th><th>Owner</th><th>SLA</th><th>Draft</th><th>Status</th></tr>\");\nticketQueue.forEach(function(t){\n  const d = t.ticket_detail;\n  const ub = d.urgency === \"Critical\" || d.urgency === \"High\" ? \"bhigh\" : (d.urgency === \"Medium\" ? \"bmed\" : \"blow\");\n  h.push(\"<tr><td>\" + esc(t.requester_name) + \"<br><span class=\\\"small\\\">\" + esc((t.description||\"\").slice(0,60)) + \"...</span></td><td>\" + esc(d.category) + \"</td><td>\" + badge(ub, d.urgency) + \"</td><td>\" + (d.deflected ? '<span class=\"ok\">Yes - KB</span>' : \"No\") + \"</td><td>\" + esc(d.owner) + \"</td><td>\" + esc(t.sla_text) + (t.sla_at_risk ? '<br><span class=\"warn\">AT RISK</span>' : \"\") + \"</td><td class=\\\"small\\\">\" + esc(t.draft_message) + \"</td><td>\" + (t.status === \"OK\" ? '<span class=\"ok\">OK</span>' : '<span class=\"warn\">REVIEW</span>') + \"</td></tr>\");\n});\nh.push(\"</table></div>\");\n\nh.push('<div class=\"grid2\"><div><h2>Automation opportunities (recurring ticket categories)</h2><table><tr><th>Category</th><th>Count</th><th>Suggested build</th></tr>');\nif (!opportunities.length) h.push('<tr><td colspan=\"3\">None yet at this volume.</td></tr>');\nopportunities.forEach(function(o){ h.push(\"<tr><td>\" + esc(o.category) + \"</td><td><b>\" + o.count + \"</b></td><td><b>\" + esc(o.suggested_tool) + \"</b><br><span class=\\\"small\\\">\" + esc(o.description) + \"</span></td></tr>\"); });\nh.push(\"</table></div><div><h2>AI enablement - adoption by team (simulated)</h2><table><tr><th>Team</th><th>Adoption</th><th>Clinic?</th></tr>\");\nenablement.sort(function(a,b){return a.adoption_pct-b.adoption_pct;}).forEach(function(e){ h.push(\"<tr><td>\" + esc(e.team) + \"</td><td>\" + e.adoption_pct + \"%</td><td>\" + (e.clinic_recommended ? '<span class=\"warn\">Recommend clinic</span>' : '<span class=\"ok\">On track</span>') + \"</td></tr>\"); });\nh.push(\"</table></div></div>\");\n\nh.push(\"<h2>License &amp; seat inventory</h2><div class=\\\"tw\\\"><table><tr><th>Tool</th><th>Used / Total</th><th>Utilization</th><th>Released</th><th>Assigned</th><th>Status</th></tr>\");\ninventory_table.forEach(function(t){ h.push(\"<tr><td>\" + esc(t.tool) + (t.sensitive ? ' <span class=\"small\">(sensitive)</span>' : \"\") + \"</td><td>\" + t.currently_used + \" / \" + t.total + \"</td><td>\" + t.utilization_pct + \"%</td><td>\" + t.released_this_run + \"</td><td>\" + t.assigned_this_run + \"</td><td>\" + (t.near_capacity ? '<span class=\"warn\">NEAR CAPACITY</span>' : '<span class=\"ok\">OK</span>') + \"</td></tr>\"); });\nh.push(\"</table></div>\");\n\nh.push('<div class=\"grid2\"><div><h2>Review queue</h2><table><tr><th>Request</th><th>Type</th><th>Reasons</th></tr>');\nif (!reviewQueue.length) h.push('<tr><td colspan=\"3\">None</td></tr>');\nreviewQueue.forEach(function(r){ h.push(\"<tr><td>\" + esc(r.requester_name) + \"</td><td>\" + esc(r.request_type) + \"</td><td>\" + esc((r.review_reasons||[]).join(\", \")) + \"</td></tr>\"); });\nh.push(\"</table></div><div><h2>Data quality issues (tally)</h2><table><tr><th>Issue</th><th>Count</th></tr>\");\nObject.keys(reasonTally).forEach(function(k){ h.push(\"<tr><td>\" + esc(k) + \"</td><td>\" + reasonTally[k] + \"</td></tr>\"); });\nh.push(\"</table></div></div>\");\nh.push('<div class=\"small\" style=\"margin-top:22px\">' + esc(dashboard.measurement_note) + \"</div></div></body></html>\");\n\nreturn [{ json: { dashboard: dashboard, ticket_queue: ticketQueue.map(function(t){ return { requester: t.requester_name, category: t.ticket_detail.category, urgency: t.ticket_detail.urgency, deflected: t.ticket_detail.deflected, sla_at_risk: t.sla_at_risk }; }),\n  inventory_table: inventory_table, automation_opportunities: opportunities, html_report: h.join(\"\") } }];\n"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "n24",
+      "name": "24. Respond (HTML dashboard)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3060,
+        460
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html_report }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Returns the HTML dashboard when the run was started from the webhook. On a manual run it simply passes the data through."
+    },
+    {
+      "id": "s1",
+      "name": "Note s1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -260
+      ],
+      "parameters": {
+        "content": "## bookingkit IT Ops & AI Agent Copilot\nSynthetic demo data throughout. The AI agent classifies and drafts only - it never claims to grant access, reset a credential, or close a ticket. Nothing sends externally until push_enabled is on.\n\nAll configurable rules live in **2. Load CONFIG**: role checklists, license inventory, KB articles, ticket categories, LLM prompt, endpoints.",
+        "height": 190,
+        "width": 860,
+        "color": 4
+      }
+    },
+    {
+      "id": "s2",
+      "name": "Note s2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -260
+      ],
+      "parameters": {
+        "content": "### Three request types, one pipeline\nOnboarding and offboarding get deterministic checklists and license logic. IT tickets get keyword triage plus an optional guardrailed LLM. All three converge at node 17.",
+        "height": 190,
+        "width": 700,
+        "color": 6
+      }
+    },
+    {
+      "id": "s3",
+      "name": "Note s3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        -260
+      ],
+      "parameters": {
+        "content": "### AI guardrails\nBaseline classification always runs first. The LLM can only raise urgency, never lower it; can only suggest a KB article that actually exists; and any 'access granted / issue resolved' language is stripped before it reaches a person.",
+        "height": 190,
+        "width": 660,
+        "color": 3
+      }
+    },
+    {
+      "id": "s4",
+      "name": "Note s4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2620,
+        -260
+      ],
+      "parameters": {
+        "content": "### Outputs\nHTML ops dashboard (readiness, ticket queue, license utilization, automation-opportunity backlog, AI-enablement gaps) plus draft Slack/Jira/Workspace payloads - all off by default, all human-approved.",
+        "height": 190,
+        "width": 760,
+        "color": 2
+      }
+    }
+  ],
+  "connections": {
+    "1. Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Load CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1b. Dashboard Webhook (GET)": {
+      "main": [
+        [
+          {
+            "node": "2. Load CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Load CONFIG": {
+      "main": [
+        [
+          {
+            "node": "3. Load Demo Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Load Demo Requests": {
+      "main": [
+        [
+          {
+            "node": "4. Normalize + Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Normalize + Validate": {
+      "main": [
+        [
+          {
+            "node": "5. Is Onboarding?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Is Onboarding?": {
+      "main": [
+        [
+          {
+            "node": "6. Build Onboarding Plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7. Is Offboarding?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Is Offboarding?": {
+      "main": [
+        [
+          {
+            "node": "8. Build Offboarding Plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "9. Is IT Ticket?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Is IT Ticket?": {
+      "main": [
+        [
+          {
+            "node": "10. Classify Ticket (Baseline)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "16. Flag Unmatched Request Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10. Classify Ticket (Baseline)": {
+      "main": [
+        [
+          {
+            "node": "11. AI Ticket Triage Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11. AI Ticket Triage Enabled?": {
+      "main": [
+        [
+          {
+            "node": "12a. AI Ticket Triage (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "12b. Skip AI (Baseline Only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12a. AI Ticket Triage (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "13. Merge AI + Baseline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12b. Skip AI (Baseline Only)": {
+      "main": [
+        [
+          {
+            "node": "13. Merge AI + Baseline",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "13. Merge AI + Baseline": {
+      "main": [
+        [
+          {
+            "node": "14. Parse + Guardrail AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "14. Parse + Guardrail AI Output": {
+      "main": [
+        [
+          {
+            "node": "15. Build Ticket Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Build Onboarding Plan": {
+      "main": [
+        [
+          {
+            "node": "17. Merge All Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Build Offboarding Plan": {
+      "main": [
+        [
+          {
+            "node": "17. Merge All Branches",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "15. Build Ticket Plan": {
+      "main": [
+        [
+          {
+            "node": "17. Merge All Branches",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "16. Flag Unmatched Request Type": {
+      "main": [
+        [
+          {
+            "node": "17. Merge All Branches",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "17. Merge All Branches": {
+      "main": [
+        [
+          {
+            "node": "18. Push Enabled?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "22. Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "18. Push Enabled?": {
+      "main": [
+        [
+          {
+            "node": "19. Slack Notification (Draft Post)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "20. Google Workspace Provisioning",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "21. Jira Escalation Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "22. Aggregate": {
+      "main": [
+        [
+          {
+            "node": "23. IT Ops Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "23. IT Ops Dashboard": {
+      "main": [
+        [
+          {
+            "node": "24. Respond (HTML dashboard)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
